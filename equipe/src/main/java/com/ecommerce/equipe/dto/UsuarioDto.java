@@ -23,15 +23,16 @@ public record UsuarioDto (
         @Email(message = "Email precisa ser válido")
         String nmEmail,
 
-        @NotBlank(message = "Senha é obrigatório")
+        // CORRIGIDO: Senha não é mais obrigatória (para atualizações)
+        // Se for vazia, o service não atualiza a senha
         @Size(min = 3, message = "A senha deve ter no mínimo 3 caracteres")
         String nmSenha,
 
         @NotBlank(message = "CPF é obrigatório")
-        @Pattern(regexp = "\\d{11}", message = "CPF deve conter 11 dígitos numéricos")
+        @Pattern(regexp = "\\d{11}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF deve ter 11 dígitos ou formato XXX.XXX.XXX-XX")
         String nuCpf,
 
-        @NotBlank(message = "Descrição é obrigatório")
+        @NotBlank(message = "Endereço é obrigatório")
         @Size(max = 255, message = "Endereço não pode ultrapassar 255 caracteres")
         String dsEndereco,
 

@@ -20,7 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-
 import java.util.Arrays;
 
 @Configuration
@@ -44,41 +43,49 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // Rotas públicas de autenticação
+                        // ========== ROTAS PÚBLICAS ==========
+                        // Autenticação
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 
-                        // Rotas de produtos
+                        // ========== ROTAS DE PRODUTOS ==========
                         .requestMatchers(HttpMethod.GET, "/api/v1/produto/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/produto/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/produto/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/produto/**").hasAuthority("ADMIN")
 
-                        // Rotas de item-pedido (CORRIGIDO - exige autenticação)
-                        .requestMatchers("/api/v1/item-pedido/**").authenticated()
+                        // ========== ROTAS DE USUÁRIO ==========
+                        // Listar todos os usuários - APENAS ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuario").hasAuthority("ADMIN")
 
-                        // Rotas de pedido
+                        // Ver perfil específico e imagem - USUÁRIO AUTENTICADO (será validado no controller)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuario/*/imagem").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/usuario/*").authenticated()
+
+                        // Atualizar perfil - USUÁRIO AUTENTICADO (será validado no controller)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/usuario/*").authenticated()
+
+                        // Deletar usuário - APENAS ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/usuario/*").hasAuthority("ADMIN")
+
+                        // ========== ROTAS DE PEDIDOS ==========
+                        .requestMatchers("/api/v1/item-pedido/**").authenticated()
                         .requestMatchers("/api/v1/pedido/**").authenticated()
 
-                        // Rotas de avaliação
+                        // ========== ROTAS DE AVALIAÇÃO ==========
                         .requestMatchers(HttpMethod.GET, "/api/v1/avaliacao/**").permitAll()
                         .requestMatchers("/api/v1/avaliacao/**").authenticated()
 
-                        // Rotas de usuário (apenas admin)
-                        .requestMatchers("/api/v1/usuario/**").hasAuthority("ADMIN")
-
-                        // Rotas de estoque
+                        // ========== ROTAS DE ESTOQUE ==========
                         .requestMatchers(HttpMethod.GET, "/api/v1/estoque/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/estoque/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/estoque/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/estoque/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/estoque/**").hasAuthority("ADMIN")
 
-                        // Rotas de pagamento
+                        // ========== ROTAS DE PAGAMENTO ==========
                         .requestMatchers("/api/v1/pagamento/**").authenticated()
-                        //rota imagem
-                        .requestMatchers(HttpMethod.GET, "/api/v1/usuario/*/imagem").authenticated()
 
-                        // Qualquer outra rota
+                        // ========== OUTRAS ROTAS ==========
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -105,6 +112,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
